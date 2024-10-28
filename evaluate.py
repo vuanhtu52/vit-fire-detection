@@ -6,6 +6,9 @@ from transformers import DefaultDataCollator, ViTFeatureExtractor, TFViTForImage
 import datasets
 from sklearn.metrics import classification_report, accuracy_score
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def get_config():
@@ -84,6 +87,24 @@ def generate_classification_report(model, tf_eval_dataset, class_names):
     report = classification_report(y_true, y_pred, target_names=class_names, zero_division=0)
     print(report)
 
+    # Generate confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    print("Confusion Matrix:")
+    print(cm)
+
+    # Plot confusion matrix
+    plot_confusion_matrix(cm, class_names)
+
+
+def plot_confusion_matrix(cm, class_names):
+    """Plots the confusion matrix."""
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
+    plt.xlabel("Predicted Labels")
+    plt.ylabel("True Labels")
+    plt.title("Confusion Matrix")
+    plt.show()
+
 
 def evaluate_model():
     config = get_config()
@@ -122,7 +143,7 @@ def evaluate_model():
     #     label2id=label2id
     # )
     # Load the model from the checkpoint
-    checkpoint_path = f"{config['output_dir']}/checkpoints/epoch-05"  # Adjust based on where your model is saved
+    checkpoint_path = f"{config['output_dir']}/checkpoints/epoch-01"  # Adjust based on where your model is saved
     model = TFViTForImageClassification.from_pretrained(
         checkpoint_path,
         num_labels=len(img_class_labels),
